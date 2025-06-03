@@ -2,13 +2,13 @@
 
 ## Bootstrap once
 
-After logging to an account with the right permissions, run the following command:
+After logging to an account with a privileged role, run the following command:
 
 ```bash
  make bootstrap PROJECT_ID=myprojectid REGION=europe-west1
 ```
 
-It will enable all the required APIs and create a service account and backend for Terraform.
+It will enable all the required APIs, create the service accounts, and create a bucket for storing the Terraform state.
 
 ## Deploy infra
 

@@ -18,6 +18,18 @@ resource "google_project_iam_member" "terraform_roles" {
   member  = "serviceAccount:${google_service_account.terraform.email}"
 }
 
+resource "google_service_account" "artifact_deployer" {
+  account_id   = "artifact-deployer"
+  display_name = "Artifact Registry Deployer"
+}
+
+resource "google_project_iam_member" "artifact_registry_writer" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.artifact_deployer.email}"
+}
+
+
 resource "google_service_account_key" "tf_key" {
   service_account_id = google_service_account.terraform.name
   keepers = {
