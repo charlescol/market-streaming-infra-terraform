@@ -4,9 +4,9 @@ REGION     ?=
 
 BOOTSTRAP_PLAN_ARGS = -var 'project_id=$(PROJECT_ID)' -var 'region=$(REGION)'
 
-.PHONY:  apply_plan bootstrap_plan_only deploy
+.PHONY: activate_apis bootstrap_apply deploy
 
-bootstrap: activate_apis bootstrap_plan_only
+bootstrap: activate_apis bootstrap_apply
 
 activate_apis:
 	gcloud services enable \
@@ -20,7 +20,7 @@ activate_apis:
 		compute.googleapis.com && \
 	echo "Waiting for API propagation..." && sleep 30
 	
-bootstrap_plan_only:
+bootstrap_apply:
 	cd bootstrap && \
 	terraform init && \
 	terraform validate && \

@@ -18,4 +18,4 @@ The following command will deploy the infrastructure:
 make deploy PROJECT_ID=myprojectid
 ```
 
-This is recommanded to be run using the service account created by the bootstrap command.
+This is recommanded to be run using the terraform service account created by the bootstrap command.
