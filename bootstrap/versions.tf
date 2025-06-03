@@ -17,6 +17,7 @@ provider "google" {
   region  = var.region
 }
 
+
 variable "project_id" {
   description = "GCP project ID"
   type        = string
@@ -25,5 +26,4 @@ variable "project_id" {
 variable "region" {
   description = "Region for bucket"
   type        = string
-  default     = "europe-west1"
 }
