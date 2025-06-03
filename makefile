@@ -14,7 +14,6 @@ bootstrap_plan_only:
 	cd bootstrap && \
 	terraform init && \
 	terraform validate && \
-	mkdir 
 	terraform plan $(BOOTSTRAP_PLAN_ARGS) -out="$(PLAN_FILE)" && \
 	terraform show "$(PLAN_FILE)" && \
 	bootstrap_apply_plan
