@@ -5,12 +5,15 @@
 
 # Secrets
 *.tfvars
-modules/LoadBalancer/certificates/*.key
+key.json
+.env
 # Terraform
 .terraform/**
 .terraform.lock.hcl
 *.tfstate*
 *.plan
+*.tfplan
+.terraform
 
 **/.terraform/**
 **/.terraform.lock.hcl

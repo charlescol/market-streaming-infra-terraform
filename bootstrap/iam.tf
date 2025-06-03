@@ -9,7 +9,9 @@ resource "google_project_iam_member" "terraform_roles" {
     "roles/container.admin",
     "roles/iam.serviceAccountUser",
     "roles/artifactregistry.admin",
-    "roles/storage.admin"
+    "roles/storage.admin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/servicemanagement.admin",
   ])
   project = var.project_id
   role    = each.key
@@ -18,11 +20,7 @@ resource "google_project_iam_member" "terraform_roles" {
 
 resource "google_service_account_key" "tf_key" {
   service_account_id = google_service_account.terraform.name
-  keepers = {  
+  keepers = {
     generation = 1
   }
-}
-
-output "terraform_sa_email" {
-  value = google_service_account.terraform.email
 }
