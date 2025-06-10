@@ -16,3 +16,9 @@ resource "google_project_iam_member" "artifact_registry_writer" {
   role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:${google_service_account.artifact_deployer.email}"
 }
+
+resource "google_project_iam_member" "flux-artifact-reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.flux-artifact-reader.email}"
+}
