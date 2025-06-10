@@ -16,8 +16,10 @@ variable "zone" {
 
 variable "cluster_name" {
   type        = string
+  description = "Name of the GKE cluster"
 }
 
-variable "artifact_repo_name" {
-  type        = string
+variable "services" {
+  type        = list(string)
+  description = "Services to deploy"
 }
