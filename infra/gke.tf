@@ -9,22 +9,6 @@ resource "google_container_cluster" "gke_cluster" {
   network    = "default"
   subnetwork = "default"
 
-  node_config {
-    machine_type = "custom-n4-10-12288"
-
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform",
-    ]
-
-    service_account = data.google_service_account.terraform.email
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
-    tags = ["gke-node"]
-  }
-
-  node_locations = [var.zone]
-
   lifecycle {
     ignore_changes = [initial_node_count]
   }
@@ -38,13 +22,17 @@ resource "google_container_node_pool" "primary_nodes" {
   node_count = 1
 
   node_config {
-    machine_type = "custom-n4-10-12288"
+    machine_type = "n4-custom-10-20480" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+
+    disk_size_gb = 20
+    disk_type    = "pd-standard"
+
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
     ]
 
-    service_account = data.google_service_account.terraform.email
+    service_account = data.google_service_account.gke_nodes.email
     metadata = {
       disable-legacy-endpoints = "true"
     }
@@ -53,7 +41,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
   autoscaling {
     min_node_count = 1
-    max_node_count = 3
+    max_node_count = 1
   }
 
   management {

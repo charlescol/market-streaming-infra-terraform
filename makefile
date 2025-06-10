@@ -31,3 +31,8 @@ deploy:
 	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
 	terraform validate && \
 	terraform apply -var-file=../$(VARS_FILE)
+
+destroy_gke:
+	cd infra && \
+	terraform destroy -target=google_container_node_pool.primary_nodes -auto-approve && \
+	terraform destroy -target=google_container_cluster.gke_cluster -auto-approve
