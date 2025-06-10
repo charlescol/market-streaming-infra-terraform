@@ -5,7 +5,7 @@
 
 # Secrets
 *.tfvars
-key.json
+*key.json
 .env
 # Terraform
 .terraform/**

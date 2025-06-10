@@ -16,10 +16,13 @@ resource "google_service_account" "artifact_deployer" {
   display_name = "Artifact Registry Deployer"
   description  = "Service account for deploying artifacts to Artifact Registry"
 }
-
-
 resource "google_service_account" "flux-artifact-reader" {
   account_id   = "flux-artifact-reader"
   display_name = "Flux Artifact Reader"
   description  = "Access to Artifact Registry for FluxCD"
+}
+
+resource "google_service_account" "gke_nodes" {
+  account_id   = "gke-node-sa"
+  display_name = "GKE Node Service Account"
 }
