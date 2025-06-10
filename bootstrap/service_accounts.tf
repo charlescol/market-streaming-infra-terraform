@@ -23,6 +23,6 @@ resource "google_service_account" "flux-artifact-reader" {
 }
 
 resource "google_service_account" "gke_nodes" {
-  account_id   = "gke-node-sa"
+  account_id   = "gke-node"
   display_name = "GKE Node Service Account"
 }
