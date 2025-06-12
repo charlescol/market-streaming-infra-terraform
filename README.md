@@ -2,13 +2,21 @@
 
 ## Bootstrap once
 
-After logging to an account with a privileged role, run the following command:
+The following command will need to be run once to enable all the required APIs and create a bucket for storing the Terraform state:
 
 ```bash
  make bootstrap PROJECT_ID=myprojectid REGION=europe-west1
 ```
 
-It will enable all the required APIs, create the service accounts, and create a bucket for storing the Terraform state.
+## Deploy core infra
+
+After logging to an account with a privileged role, run the following command:
+
+```bash
+ make core PROJECT_ID=myprojectid REGION=europe-west1
+```
+
+It is used to manage resources that necessitate a privileged role such as service accounts, IAM roles, etc.
 
 ## Deploy infra
 
@@ -18,4 +26,4 @@ The following command will deploy the infrastructure:
 make deploy PROJECT_ID=myprojectid
 ```
 
-This is recommanded to be run using the terraform service account created by the bootstrap command.
+This is recommanded to be run using the terraform service account created by the previous command.
