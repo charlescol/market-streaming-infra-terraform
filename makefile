@@ -2,9 +2,9 @@ VARS_FILE ?= variables.tfvars
 PROJECT_ID ?=
 REGION     ?=
 
-BOOTSTRAP_PLAN_ARGS = -var 'project_id=$(PROJECT_ID)' -var 'region=$(REGION)'
+PLAN_ARGS = -var 'project_id=$(PROJECT_ID)' -var 'region=$(REGION)'
 
-.PHONY: activate_apis bootstrap_apply deploy
+.PHONY: activate_apis bootstrap_apply deploy destroy_gke core
 
 bootstrap: activate_apis bootstrap_apply
 
@@ -24,7 +24,13 @@ bootstrap_apply:
 	cd bootstrap && \
 	terraform init && \
 	terraform validate && \
-	terraform apply $(BOOTSTRAP_PLAN_ARGS) \
+	terraform apply $(PLAN_ARGS) \
+
+core:
+	cd core && \
+	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
+	terraform validate && \
+	terraform apply $(PLAN_ARGS) \
 
 deploy:
 	cd infra && \
