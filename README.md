@@ -23,7 +23,7 @@ It is used to manage resources that necessitate a privileged role such as servic
 The following command will deploy the infrastructure:
 
 ```bash
-make deploy PROJECT_ID=myprojectid
+make deploy PROJECT_ID=myprojectid VARS_FILE=variables.tfvars
 ```
 
 This is recommanded to be run using the terraform service account created by the previous command.
