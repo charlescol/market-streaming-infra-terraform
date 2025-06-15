@@ -4,11 +4,19 @@ REGION     ?=
 
 PLAN_ARGS = -var 'project_id=$(PROJECT_ID)' -var 'region=$(REGION)'
 
-.PHONY: activate_apis bootstrap_apply deploy destroy_gke core
+.PHONY: activate_apis bootstrap_apply deploy destroy_gke core destroy_all help
 
 bootstrap: activate_apis bootstrap_apply
 
-activate_apis:
+
+help: ## Display this help
+	@echo "Usage: make <target> [PROJECT_ID=...] [REGION=...] [VARS_FILE=...]"
+	@echo ""
+	@echo "Targets :"
+	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) \
+		| awk 'BEGIN {FS = ":.*?##"}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+activate_apis: ## Activate required APIs
 	gcloud services enable \
 		iam.googleapis.com \
 		cloudresourcemanager.googleapis.com \
@@ -17,28 +25,63 @@ activate_apis:
 		container.googleapis.com \
 		storage.googleapis.com \
 		orgpolicy.googleapis.com \
+		secretmanager.googleapis.com \
 		compute.googleapis.com && \
 	echo "Waiting for API propagation..." && sleep 30
 	
-bootstrap_apply:
+bootstrap_apply: ## Apply bootstrap infrastructure
 	cd bootstrap && \
 	terraform init && \
 	terraform validate && \
 	terraform apply $(PLAN_ARGS) \
 
-core:
+core: ## Deploy core infrastructure
 	cd core && \
 	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
 	terraform validate && \
 	terraform apply $(PLAN_ARGS) \
 
-deploy:
+deploy: ## Deploy infrastructure
 	cd infra && \
 	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
 	terraform validate && \
 	terraform apply -var-file=../$(VARS_FILE)
 
-destroy_gke:
+destroy_gke: ## Destroy GKE cluster and node pool
 	cd infra && \
 	terraform destroy -target=google_container_node_pool.primary_nodes -auto-approve && \
 	terraform destroy -target=google_container_cluster.gke_cluster -auto-approve
+
+
+destroy_all: ## Destroy all resources
+	@echo "⚠️  You are about to destroy all resources. This action is irreversible."
+	@read -p "❓ Are you sure you want to continue? (yes/no): " confirm; \
+	if [ "$$confirm" != "yes" ]; then \
+		echo "❌ Operation cancelled."; \
+		exit 1; \
+	fi
+
+	cd infra && \
+	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
+	terraform destroy -var-file=../$(VARS_FILE) -auto-approve
+
+	cd core && \
+	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
+	terraform destroy $(PLAN_ARGS) -auto-approve
+
+	cd bootstrap && \
+	terraform init && \
+	terraform destroy $(PLAN_ARGS) -auto-approve
+
+	gcloud services disable \
+		iam.googleapis.com \
+		cloudresourcemanager.googleapis.com \
+		serviceusage.googleapis.com \
+		artifactregistry.googleapis.com \
+		container.googleapis.com \
+		storage.googleapis.com \
+		orgpolicy.googleapis.com \
+		secretmanager.googleapis.com \
+		compute.googleapis.com \
+		--project=$(PROJECT_ID) \
+		--force

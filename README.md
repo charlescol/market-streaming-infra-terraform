@@ -1,5 +1,11 @@
 # How to use
 
+To get the list of available commands, run:
+
+```bash
+ make help
+```
+
 ## Bootstrap once
 
 The following command will need to be run once to enable all the required APIs and create a bucket for storing the Terraform state:
