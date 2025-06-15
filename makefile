@@ -26,8 +26,9 @@ activate_apis: ## Activate required APIs
 		storage.googleapis.com \
 		orgpolicy.googleapis.com \
 		secretmanager.googleapis.com \
-		compute.googleapis.com && \
-	echo "Waiting for API propagation..." && sleep 30
+		compute.googleapis.com \
+		--project=$(PROJECT_ID)
+	@echo "Waiting for API propagation..." && sleep 30
 	
 bootstrap_apply: ## Apply bootstrap infrastructure
 	cd bootstrap && \
