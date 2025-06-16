@@ -61,7 +61,7 @@ destroy_gke: ## Destroy GKE cluster and node pool
 	@echo "⚠️  You are about to destroy the GKE cluster and node pool. This action is irreversible."
 	@$(MAKE) _confirm
 	cd infra && \
-	set -e; \
+	set -e; && \
 	terraform destroy -target=google_container_node_pool.primary_nodes -auto-approve && \
 	terraform destroy -target=google_container_cluster.gke_cluster -auto-approve
 
@@ -72,17 +72,17 @@ destroy_all: ## Destroy all resources
 	@$(MAKE) _confirm
 
 	cd infra && \
-	set -e; \
+	set -e; && \
 	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
 	terraform destroy -var-file=../$(VARS_FILE) -auto-approve
 
 	cd core && \
-	set -e; \
+	set -e; && \
 	terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
 	terraform destroy $(PLAN_ARGS) -auto-approve
 
 	cd bootstrap && \
-	set -e; \
+	set -e; && \
 	terraform init && \
 	terraform destroy $(PLAN_ARGS) -auto-approve
 
