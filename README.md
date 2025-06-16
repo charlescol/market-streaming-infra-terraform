@@ -6,6 +6,8 @@ To get the list of available commands, run:
  make help
 ```
 
+**Note:** use the gcloud CLI to authenticate before running the commands.
+
 ## Bootstrap once
 
 The following command will need to be run once to enable all the required APIs and create a bucket for storing the Terraform state:
