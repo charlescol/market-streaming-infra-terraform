@@ -32,6 +32,7 @@ resource "google_project_iam_member" "gke_node_iam" {
     "roles/stackdriver.resourceMetadata.writer",
     "roles/compute.viewer",
     "roles/storage.objectViewer",
+    "roles/compute.storageAdmin"
   ])
   project = var.project_id
   role    = each.key
