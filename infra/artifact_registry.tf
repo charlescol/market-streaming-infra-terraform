@@ -19,8 +19,7 @@ resource "google_artifact_registry_repository" "repos" {
     id     = "keep-minimum-versions"
     action = "KEEP"
     most_recent_versions {
-      package_name_prefixes = [""]
-      keep_count            = 3
+      keep_count = 3
     }
   }
 }
