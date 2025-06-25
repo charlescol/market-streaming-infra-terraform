@@ -16,7 +16,7 @@ resource "google_compute_resource_policy" "gce_pv_disk_backup" {
     schedule {
       daily_schedule {
         days_in_cycle = 1
-        start_time    = "15:00"
+        start_time    = "01:00"
       }
     }
     retention_policy {
@@ -24,7 +24,7 @@ resource "google_compute_resource_policy" "gce_pv_disk_backup" {
       on_source_disk_delete = "APPLY_RETENTION_POLICY"
     }
     snapshot_properties {
-      guest_flush = true
+      guest_flush = false
       labels = {
         application = "grafana"
         db_type     = "sqlite"
