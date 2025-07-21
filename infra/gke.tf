@@ -9,6 +9,13 @@ resource "google_container_cluster" "gke_cluster" {
 
   network    = "default"
   subnetwork = "default"
+
+  ip_allocation_policy {
+    cluster_ipv4_cidr_block  = "10.20.0.0/16"
+    services_ipv4_cidr_block = "10.30.0.0/20"
+  }
+
+
   lifecycle {
     ignore_changes = [initial_node_count]
   }
@@ -22,7 +29,7 @@ resource "google_container_node_pool" "primary_nodes" {
   node_count = 1
 
   node_config {
-    machine_type = "e2-custom-10-20480" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+    machine_type = "e2-custom-12-20480" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
 
     confidential_nodes {
       enabled = false
