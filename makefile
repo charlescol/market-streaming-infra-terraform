@@ -64,6 +64,7 @@ destroy_gke: ## Destroy GKE cluster and node pool
 		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_node_pool.primary_nodes -auto-approve && \
 		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_cluster.gke_cluster -auto-approve ; \
 	}
+	@$(MAKE) remove_pvcs
 
 
 destroy_all: ## Destroy all resources
@@ -89,6 +90,8 @@ destroy_all: ## Destroy all resources
 		terraform destroy $(PLAN_ARGS) -auto-approve ; \
 	}
 
+	@$(MAKE) remove_pvcs
+
 	@gcloud services disable \
 		iam.googleapis.com \
 		cloudresourcemanager.googleapis.com \
@@ -103,6 +106,18 @@ destroy_all: ## Destroy all resources
 		--force
 		
 	@echo "All resources have been destroyed successfully."
+
+remove_pvcs: ## Remove all persistent volume claims with a Retain policy
+	if [ -z "$(REGION)" ]; then \
+		echo "❌ REGION is not set. Use make <target> REGION=your-region"; \
+		exit 1; \
+	fi; \
+	gcloud compute disks list \
+		--filter='name~"^pvc-.*" AND zone~"$(REGION)-.*"' \
+		--format='value(name,zone)' | \
+	while read DISK ZONE; do \
+		gcloud compute disks delete "$$DISK" --zone "$$ZONE" --quiet; \
+	done
 
 _confirm:
 	@read -p "❓ Are you sure you want to continue? (yes/no): " confirm; \
