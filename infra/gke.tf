@@ -26,7 +26,7 @@ resource "google_container_node_pool" "primary_nodes" {
   cluster    = google_container_cluster.gke_cluster.name
   location   = var.zone
   project    = var.project_id
-  node_count = 1
+  node_count = 2
 
   node_config {
     machine_type = "e2-custom-24-32768" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
@@ -51,8 +51,8 @@ resource "google_container_node_pool" "primary_nodes" {
   }
 
   autoscaling {
-    min_node_count = 1
-    max_node_count = 1
+    min_node_count = 2
+    max_node_count = 2
   }
 
   management {

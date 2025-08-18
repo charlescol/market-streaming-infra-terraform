@@ -107,7 +107,7 @@ destroy_all: ## Destroy all resources
 		
 	@echo "All resources have been destroyed successfully."
 
-remove_pvcs: ## Remove all persistent volume claims with a Retain policy
+remove_pvcs: ## Remove all persistent volume claims with a Retain policy. This is useful to clean when the cluster is destroyed but the PVC were not deleted before. 
 	if [ -z "$(REGION)" ]; then \
 		echo "❌ REGION is not set. Use make <target> REGION=your-region"; \
 		exit 1; \
