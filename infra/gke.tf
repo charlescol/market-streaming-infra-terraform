@@ -15,6 +15,8 @@ resource "google_container_cluster" "gke_cluster" {
     services_ipv4_cidr_block = "10.30.0.0/20"
   }
 
+  logging_service    = "none"
+  monitoring_service = "none"
 
   lifecycle {
     ignore_changes = [initial_node_count]
