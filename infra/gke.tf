@@ -36,9 +36,10 @@ resource "google_container_node_pool" "primary_nodes" {
     confidential_nodes {
       enabled = false
     }
-    disk_size_gb                = 50
+    disk_size_gb                = 30
     disk_type                   = "pd-ssd"
     enable_confidential_storage = false
+    # local_ssd_count             = 1
 
 
     oauth_scopes = [

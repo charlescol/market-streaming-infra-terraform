@@ -39,3 +39,9 @@ resource "google_project_iam_member" "gke_node_iam" {
   role    = each.key
   member  = "serviceAccount:${google_service_account.gke_nodes.email}"
 }
+
+resource "google_project_iam_member" "druid_storage_writer_iam" {
+  project = var.project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_service_account.druid-storage-writer.email}"
+}

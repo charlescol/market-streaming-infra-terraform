@@ -62,7 +62,8 @@ destroy_gke: ## Destroy GKE cluster and node pool
 	@cd infra && { \
 		set -e; \
 		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_node_pool.primary_nodes -auto-approve && \
-		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_cluster.gke_cluster -auto-approve ; \
+		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_cluster.gke_cluster -auto-approve && \
+		terraform destroy -var-file=../$(VARS_FILE) -target=google_storage_bucket.druid_storage -auto-approve ; \
 	}
 	@$(MAKE) remove_pvcs
 

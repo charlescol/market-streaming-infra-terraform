@@ -26,3 +26,10 @@ resource "google_service_account" "gke_nodes" {
   account_id   = "gke-node"
   display_name = "GKE Node Service Account"
 }
+
+
+resource "google_service_account" "druid-storage-writer" {
+  account_id   = "druid-storage-writer"
+  display_name = "Druid Storage Writer"
+  description  = "Service account for managing Druid storage"
+}
