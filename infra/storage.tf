@@ -24,7 +24,7 @@ resource "google_compute_resource_policy" "gce_pv_disk_backup" {
       on_source_disk_delete = "APPLY_RETENTION_POLICY"
     }
     snapshot_properties {
-      guest_flush = false
+      guest_flush = true
       labels = {
         application = "grafana"
         db_type     = "sqlite"
