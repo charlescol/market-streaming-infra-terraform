@@ -23,23 +23,23 @@ resource "google_container_cluster" "gke_cluster" {
   }
 }
 
-resource "google_container_node_pool" "primary_nodes" {
-  name       = "primary-node-pool"
+resource "google_container_node_pool" "light_pool" {
+  name       = "light-node-pool"
   cluster    = google_container_cluster.gke_cluster.name
   location   = var.zone
   project    = var.project_id
   node_count = 2
 
   node_config {
-    machine_type = "e2-custom-24-32768" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+    machine_type = "n2-custom-12-24576" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
 
     confidential_nodes {
       enabled = false
     }
-    disk_size_gb                = 30
+    disk_size_gb                = 50
     disk_type                   = "pd-ssd"
     enable_confidential_storage = false
-    # local_ssd_count             = 1
+    local_ssd_count             = 2 #  375 GiB per disk
 
 
     oauth_scopes = [
@@ -50,12 +50,52 @@ resource "google_container_node_pool" "primary_nodes" {
     metadata = {
       disable-legacy-endpoints = "true"
     }
-    tags = ["gke-node"]
+    tags = ["gke-node", "light-node"]
   }
 
   autoscaling {
     min_node_count = 2
     max_node_count = 2
+  }
+
+  management {
+    auto_upgrade = true
+    auto_repair  = true
+  }
+}
+
+
+resource "google_container_node_pool" "heavy_pool" {
+  name       = "heavy-node-pool"
+  cluster    = google_container_cluster.gke_cluster.name
+  location   = var.zone
+  project    = var.project_id
+  node_count = 1
+
+  node_config {
+    machine_type = "e2-custom-24-32768" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+
+    confidential_nodes {
+      enabled = false
+    }
+    disk_size_gb                = 50
+    disk_type                   = "pd-ssd"
+    enable_confidential_storage = false
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform",
+    ]
+
+    service_account = data.google_service_account.gke_nodes.email
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
+    tags = ["gke-node", "heavy-node"]
+  }
+
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 1
   }
 
   management {
