@@ -21,6 +21,12 @@ resource "google_container_cluster" "gke_cluster" {
   lifecycle {
     ignore_changes = [initial_node_count]
   }
+
+  addons_config {
+    http_load_balancing {
+      disabled = false
+    }
+  }
 }
 
 resource "google_container_node_pool" "light_pool" {
