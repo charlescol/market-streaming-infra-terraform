@@ -37,3 +37,10 @@
 # Misc
 dummy_nest_api.zip
 functions.zip
+
+# Certificates
+generated-*/
+*.crt
+*.key
+*.pem
+*.cnf
