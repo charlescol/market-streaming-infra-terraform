@@ -92,6 +92,7 @@ destroy_all: ## Destroy all resources
 	}
 
 	@$(MAKE) remove_pvcs
+	@$(MAKE) remove_certs
 
 	@gcloud services disable \
 		iam.googleapis.com \
@@ -138,3 +139,11 @@ _check_vars:
 	    exit 1; \
 	  fi; \
 	}
+
+remove_certs: ## Remove all managed certificates created by the infrastructure
+	@echo "Removing managed SSL certificates..."
+	@for cert in $(shell gcloud compute ssl-certificates list --global --format="value(name)" | grep '^mcrt-'); do \
+		echo "Deleting certificate: $$cert"; \
+		gcloud compute ssl-certificates delete "$$cert" --global --quiet; \
+	done
+	@echo "All managed certificates have been deleted."
