@@ -66,6 +66,7 @@ destroy_gke: ## Destroy GKE cluster and node pool
 		terraform destroy -var-file=../$(VARS_FILE) -target=google_storage_bucket.druid_storage -auto-approve ; \
 	}
 	@$(MAKE) remove_pvcs
+	@$(MAKE) remove_certs
 
 
 destroy_all: ## Destroy all resources

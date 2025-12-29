@@ -28,10 +28,10 @@ resource "google_container_node_pool" "light_pool" {
   cluster    = google_container_cluster.gke_cluster.name
   location   = var.zone
   project    = var.project_id
-  node_count = 2
+  node_count = 4
 
   node_config {
-    machine_type = "n2-custom-12-24576" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+    machine_type = "n2-custom-14-24576" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
 
     confidential_nodes {
       enabled = false
@@ -54,8 +54,8 @@ resource "google_container_node_pool" "light_pool" {
   }
 
   autoscaling {
-    min_node_count = 2
-    max_node_count = 2
+    min_node_count = 4
+    max_node_count = 4
   }
 
   management {
@@ -65,41 +65,42 @@ resource "google_container_node_pool" "light_pool" {
 }
 
 
-resource "google_container_node_pool" "heavy_pool" {
-  name       = "heavy-node-pool"
-  cluster    = google_container_cluster.gke_cluster.name
-  location   = var.zone
-  project    = var.project_id
-  node_count = 1
 
-  node_config {
-    machine_type = "e2-custom-24-32768" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+# resource "google_container_node_pool" "heavy_pool" {
+#   name       = "heavy-node-pool"
+#   cluster    = google_container_cluster.gke_cluster.name
+#   location   = var.zone
+#   project    = var.project_id
+#   node_count = 1
 
-    confidential_nodes {
-      enabled = false
-    }
-    disk_size_gb                = 50
-    disk_type                   = "pd-ssd"
-    enable_confidential_storage = false
+#   node_config {
+#     machine_type = "e2-custom-24-32768" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
 
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform",
-    ]
+#     confidential_nodes {
+#       enabled = false
+#     }
+#     disk_size_gb                = 50
+#     disk_type                   = "pd-ssd"
+#     enable_confidential_storage = false
 
-    service_account = data.google_service_account.gke_nodes.email
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
-    tags = ["gke-node", "heavy-node"]
-  }
+#     oauth_scopes = [
+#       "https://www.googleapis.com/auth/cloud-platform",
+#     ]
 
-  autoscaling {
-    min_node_count = 1
-    max_node_count = 1
-  }
+#     service_account = data.google_service_account.gke_nodes.email
+#     metadata = {
+#       disable-legacy-endpoints = "true"
+#     }
+#     tags = ["gke-node", "heavy-node"]
+#   }
 
-  management {
-    auto_upgrade = true
-    auto_repair  = true
-  }
-}
+#   autoscaling {
+#     min_node_count = 1
+#     max_node_count = 1
+#   }
+
+#   management {
+#     auto_upgrade = true
+#     auto_repair  = true
+#   }
+# }
