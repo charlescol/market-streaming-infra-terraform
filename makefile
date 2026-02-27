@@ -1,16 +1,21 @@
 VARS_FILE ?= variables.tfvars
+CLUSTER_NAME ?= prod-gke-tokyo-an1-cluster
 PROJECT_ID ?=
-REGION     ?=
+ZONE ?=
+REGION ?= $(shell echo "$(ZONE)" | sed -E 's/-[a-z]$$//')
 
-PLAN_ARGS = -var 'project_id=$(PROJECT_ID)' -var 'region=$(REGION)'
+TF_ARGS_INFRA = -auto-approve -var-file=$(VARS_FILE) \
+	-var="project_id=$(PROJECT_ID)" -var="zone=$(ZONE)" -var="cluster_name=$(CLUSTER_NAME)" -var="region=$(REGION)"
 
-.PHONY: activate_apis bootstrap_apply deploy destroy_gke core destroy_all help _confirm bootstrap check_vars
+TF_ARGS_CORE_BOOTSTRAP = -auto-approve \
+	-var="project_id=$(PROJECT_ID)" -var="zone=$(ZONE)" -var="cluster_name=$(CLUSTER_NAME)" -var="region=$(REGION)"
+
+.PHONY: activate_apis bootstrap_apply deploy destroy_gke core destroy_all help _confirm bootstrap _check_vars
 
 bootstrap: activate_apis bootstrap_apply
 
-
 help: ## Display this help
-	@echo "Usage: make <target> [PROJECT_ID=...] [REGION=...] [VARS_FILE=...]"
+	@echo "Usage: make <target> [PROJECT_ID=...] [ZONE=...] [VARS_FILE=...]"
 	@echo ""
 	@echo "Targets :"
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) \
@@ -36,7 +41,7 @@ bootstrap_apply: ## Apply bootstrap infrastructure
 	@cd bootstrap && { \
 		terraform init && \
 		terraform validate && \
-		terraform apply $(PLAN_ARGS) ; \
+		terraform apply $(TF_ARGS_CORE_BOOTSTRAP) ; \
 	}
 
 core: ## Deploy core infrastructure
@@ -44,7 +49,7 @@ core: ## Deploy core infrastructure
 	@cd core && { \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
 		terraform validate && \
-		terraform apply $(PLAN_ARGS) ; \
+		terraform apply $(TF_ARGS_CORE_BOOTSTRAP) ; \
 	}
 
 deploy: ## Deploy infrastructure
@@ -52,7 +57,7 @@ deploy: ## Deploy infrastructure
 	@cd infra && { \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
 		terraform validate && \
-		terraform apply -var-file=../$(VARS_FILE) ; \
+		terraform apply $(TF_ARGS_INFRA); \
 	}
 
 destroy_gke: ## Destroy GKE cluster and node pool
@@ -61,9 +66,8 @@ destroy_gke: ## Destroy GKE cluster and node pool
 	@$(MAKE) _confirm
 	@cd infra && { \
 		set -e; \
-		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_node_pool.ssd_pool -auto-approve && \
-		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_node_pool.standard_pool -auto-approve && \
-		terraform destroy -var-file=../$(VARS_FILE) -target=google_container_cluster.gke_cluster -auto-approve; \
+		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
+		terraform destroy $(TF_ARGS_INFRA) -target=google_container_cluster.gke_cluster; \
 	}
 	@$(MAKE) remove_pvcs
 	@$(MAKE) remove_certs
@@ -74,7 +78,8 @@ destroy_druid_storage: ## Destroy DRUID storage
 	@$(MAKE) _confirm
 	@cd infra && { \
 		set -e; \
-		terraform destroy -var-file=../$(VARS_FILE) -target=google_storage_bucket.druid_storage -auto-approve ; \
+		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
+		terraform destroy $(TF_ARGS_INFRA) -target=google_storage_bucket.druid_storage; \
 	}
 
 destroy_all: ## Destroy all resources
@@ -85,19 +90,19 @@ destroy_all: ## Destroy all resources
 	@cd infra && { \
 		set -e; \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
-		terraform destroy -var-file=../$(VARS_FILE) -auto-approve ; \
+		terraform destroy $(TF_ARGS_INFRA); \
 	}
 
 	@cd core && { \
 		set -e; \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
-		terraform destroy $(PLAN_ARGS) -auto-approve ; \
+		terraform destroy $(TF_ARGS_CORE_BOOTSTRAP); \
 	}
 
 	@cd bootstrap && { \
 		set -e; \
 		terraform init && \
-		terraform destroy $(PLAN_ARGS) -auto-approve ; \
+		terraform destroy $(TF_ARGS_CORE_BOOTSTRAP); \
 	}
 
 	@$(MAKE) remove_pvcs
@@ -115,19 +120,21 @@ destroy_all: ## Destroy all resources
 		compute.googleapis.com \
 		--project=$(PROJECT_ID) \
 		--force
-		
+
 	@echo "All resources have been destroyed successfully."
 
 remove_pvcs: ## Remove all persistent volume claims with a Retain policy. This is useful to clean when the cluster is destroyed but the PVC were not deleted before. 
-	if [ -z "$(REGION)" ]; then \
-		echo "❌ REGION is not set. Use make <target> REGION=your-region"; \
-		exit 1; \
+	@set -e; \
+	DISKS=$$(gcloud compute disks list \
+		--project "$(PROJECT_ID)" \
+		--filter='zone:$(ZONE) AND labels.kubernetes-io-cluster-$(CLUSTER_NAME)=owned' \
+		--format='value(name,zone)'); \
+	if [ -z "$$DISKS" ]; then \
+		echo "✅ No PVC disks found for cluster $(CLUSTER_NAME) in $(ZONE)."; \
+		exit 0; \
 	fi; \
-	gcloud compute disks list \
-		--filter='name~"^pvc-.*" AND zone~"$(REGION)-.*"' \
-		--format='value(name,zone)' | \
-	while read DISK ZONE; do \
-		gcloud compute disks delete "$$DISK" --zone "$$ZONE" --quiet; \
+	echo "$$DISKS" | while read DISK DISK_ZONE; do \
+		gcloud compute disks delete "$$DISK" --zone "$$DISK_ZONE" --project "$(PROJECT_ID)" --quiet; \
 	done
 
 _confirm:
@@ -143,8 +150,16 @@ _check_vars:
 	    echo "❌ PROJECT_ID is not set. Use make <target> PROJECT_ID=your-project-id"; \
 	    exit 1; \
 	  fi; \
+	  if [ -z "$(ZONE)" ]; then \
+	    echo "❌ ZONE is not set. Use make <target> ZONE=your-zone"; \
+	    exit 1; \
+	  fi; \
+	  if [ -z "$(CLUSTER_NAME)" ]; then \
+	    echo "❌ CLUSTER_NAME is not set. Use make <target> CLUSTER_NAME=your-cluster-name"; \
+	    exit 1; \
+	  fi; \
 	  if [ -z "$(REGION)" ]; then \
-	    echo "❌ REGION is not set. Use make <target> REGION=your-region"; \
+	    echo "❌ REGION could not be derived from ZONE=$(ZONE)"; \
 	    exit 1; \
 	  fi; \
 	}

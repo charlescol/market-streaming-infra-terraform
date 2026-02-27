@@ -13,7 +13,8 @@ To get the list of available commands, run:
 The following command will need to be run once to enable all the required APIs and create a bucket for storing the Terraform state:
 
 ```bash
- make bootstrap PROJECT_ID=myprojectid REGION=europe-west1
+cd bootstrap
+ make bootstrap PROJECT_ID=myprojectid ZONE=asia-northeast1-c CLUSTER_NAME=my-gke-cluster
 ```
 
 ## Deploy core infra
@@ -21,7 +22,8 @@ The following command will need to be run once to enable all the required APIs a
 After logging to an account with a privileged role, run the following command:
 
 ```bash
- make core PROJECT_ID=myprojectid REGION=europe-west1
+cd core
+ make core PROJECT_ID=myprojectid ZONE=asia-northeast1-c CLUSTER_NAME=my-gke-cluster
 ```
 
 It is used to manage resources that necessitate a privileged role such as service accounts, IAM roles, etc.
@@ -31,7 +33,8 @@ It is used to manage resources that necessitate a privileged role such as servic
 The following command will deploy the infrastructure:
 
 ```bash
-make deploy PROJECT_ID=myprojectid VARS_FILE=variables.tfvars
+cd infra
+make deploy PROJECT_ID=myprojectid ZONE=asia-northeast1-c CLUSTER_NAME=my-gke-cluster VARS_FILE=../variables.tfvars
 ```
 
 This is recommanded to be run using the terraform service account created by the previous command.
