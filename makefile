@@ -15,7 +15,7 @@ TF_ARGS_CORE_BOOTSTRAP = -auto-approve \
 bootstrap: activate_apis bootstrap_apply
 
 help: ## Display this help
-	@echo "Usage: make <target> [PROJECT_ID=...] [ZONE=...] [VARS_FILE=...]"
+	@echo "Usage: make <target> [PROJECT_ID=...] [ZONE=...] [VARS_FILE=...] [CLUSTER_NAME=...]"
 	@echo ""
 	@echo "Targets :"
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) \
