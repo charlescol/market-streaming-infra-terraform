@@ -127,10 +127,10 @@ remove_pvcs: ## Remove all persistent volume claims with a Retain policy. This i
 	@set -e; \
 	DISKS=$$(gcloud compute disks list \
 		--project "$(PROJECT_ID)" \
-		--filter='zone:$(ZONE) AND labels.kubernetes-io-cluster-$(CLUSTER_NAME)=owned' \
+		--filter='zone:$(ZONE) AND labels.goog-k8s-cluster-name=$(CLUSTER_NAME) AND name~"^pvc-"' \
 		--format='value(name,zone)'); \
 	if [ -z "$$DISKS" ]; then \
-		echo "✅ No PVC disks found for cluster $(CLUSTER_NAME) in $(ZONE)."; \
+		echo "✅ No pvc-* disks found for cluster $(CLUSTER_NAME) in $(ZONE)."; \
 		exit 0; \
 	fi; \
 	echo "$$DISKS" | while read DISK DISK_ZONE; do \
