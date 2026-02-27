@@ -4,10 +4,10 @@ PROJECT_ID ?=
 ZONE ?=
 REGION ?= $(shell echo "$(ZONE)" | sed -E 's/-[a-z]$$//')
 
-TF_ARGS_INFRA = -auto-approve -var-file=$(VARS_FILE) \
+TF_ARGS_INFRA = -var-file=$(VARS_FILE) \
 	-var="project_id=$(PROJECT_ID)" -var="zone=$(ZONE)" -var="cluster_name=$(CLUSTER_NAME)" -var="region=$(REGION)"
 
-TF_ARGS_CORE_BOOTSTRAP = -auto-approve \
+TF_ARGS_CORE_BOOTSTRAP = \
 	-var="project_id=$(PROJECT_ID)" -var="zone=$(ZONE)" -var="cluster_name=$(CLUSTER_NAME)" -var="region=$(REGION)"
 
 .PHONY: activate_apis bootstrap_apply deploy destroy_gke core destroy_all help _confirm bootstrap _check_vars
@@ -67,7 +67,7 @@ destroy_gke: ## Destroy GKE cluster and node pool
 	@cd infra && { \
 		set -e; \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
-		terraform destroy $(TF_ARGS_INFRA) -target=google_container_cluster.gke_cluster; \
+		terraform destroy $(TF_ARGS_INFRA) -target=google_container_cluster.gke_cluster -auto-approve; \
 	}
 	@$(MAKE) remove_pvcs
 	@$(MAKE) remove_certs
@@ -79,7 +79,7 @@ destroy_druid_storage: ## Destroy DRUID storage
 	@cd infra && { \
 		set -e; \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
-		terraform destroy $(TF_ARGS_INFRA) -target=google_storage_bucket.druid_storage; \
+		terraform destroy $(TF_ARGS_INFRA) -target=google_storage_bucket.druid_storage -auto-approve; \
 	}
 
 destroy_all: ## Destroy all resources
@@ -90,19 +90,19 @@ destroy_all: ## Destroy all resources
 	@cd infra && { \
 		set -e; \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=gke" && \
-		terraform destroy $(TF_ARGS_INFRA); \
+		terraform destroy $(TF_ARGS_INFRA) -auto-approve; \
 	}
 
 	@cd core && { \
 		set -e; \
 		terraform init -backend-config="bucket=tfstate-$(PROJECT_ID)" -backend-config="prefix=core" && \
-		terraform destroy $(TF_ARGS_CORE_BOOTSTRAP); \
+		terraform destroy $(TF_ARGS_CORE_BOOTSTRAP) -auto-approve; \
 	}
 
 	@cd bootstrap && { \
 		set -e; \
 		terraform init && \
-		terraform destroy $(TF_ARGS_CORE_BOOTSTRAP); \
+		terraform destroy $(TF_ARGS_CORE_BOOTSTRAP) -auto-approve; \
 	}
 
 	@$(MAKE) remove_pvcs
