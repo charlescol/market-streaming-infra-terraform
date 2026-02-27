@@ -7,6 +7,12 @@ resource "google_container_cluster" "gke_cluster" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
+  node_config {
+    machine_type = "e2-small" # ou e2-medium si tu préfères
+    disk_type    = "pd-standard"
+    disk_size_gb = 30
+  }
+
   network    = "default"
   subnetwork = "default"
 

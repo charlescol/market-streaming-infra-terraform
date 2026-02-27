@@ -171,3 +171,16 @@ remove_certs: ## Remove all managed certificates created by the infrastructure
 		gcloud compute ssl-certificates delete "$$cert" --global --quiet; \
 	done
 	@echo "All managed certificates have been deleted."
+
+test_stockout: ## Test e2-medium availability in asia-northeast1 a/b/c (create+delete)
+	@set -e; \
+	for z in asia-northeast1-a asia-northeast1-b asia-northeast1-c; do \
+	  n="stockout-test-$${z##*-}"; \
+	  echo "== $$z =="; \
+	  if gcloud compute instances create "$$n" --zone="$$z" --machine-type=e2-medium --image-family=debian-12 --image-project=debian-cloud --quiet; then \
+	    echo "OK"; \
+	    gcloud compute instances delete "$$n" --zone="$$z" --quiet; \
+	  else \
+	    echo "NO"; \
+	  fi; \
+	done
