@@ -7,14 +7,8 @@ resource "google_container_cluster" "gke_cluster" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  node_config {
-    machine_type = "e2-small" # ou e2-medium si tu préfères
-    disk_type    = "pd-standard"
-    disk_size_gb = 30
-  }
-
-  network    = "default"
-  subnetwork = "default"
+  network    = "projects/market-streaming-prod/global/networks/default"
+  subnetwork = "projects/market-streaming-prod/regions/asia-northeast1/subnetworks/default"
 
   ip_allocation_policy {
     cluster_ipv4_cidr_block  = "10.20.0.0/16"
@@ -37,7 +31,7 @@ resource "google_container_node_pool" "ssd_pool" {
   node_count = 3
 
   node_config {
-    machine_type = "n2-standard-8" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+    machine_type = "n2d-standard-8" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
 
     confidential_nodes {
       enabled = false
@@ -80,7 +74,7 @@ resource "google_container_node_pool" "standard_pool" {
   node_count = 5
 
   node_config {
-    machine_type = "n2-standard-16" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
+    machine_type = "n2d-standard-16" # Check availability: gcloud compute machine-types describe {machine_type} --zone={zone}
 
     confidential_nodes {
       enabled = false

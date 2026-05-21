@@ -1,0 +1,12 @@
+project_id   = "market-streaming-prod"
+region       = "asia-northeast1"
+cluster_name = "prod-gke-tokyo-an1-cluster"
+services = [
+  "msv-tokio-binance-scraper",
+  "flink-microstructures-extractor",
+  "tokio-binance-middleware",
+  "tokio-kucoin-middleware",
+  "tokio-binance-mock",
+  "init-schema-registry",
+  "msv-tokio-kucoin-scraper"
+]
